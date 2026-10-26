@@ -1,0 +1,29 @@
+#!/bin/sh
+# e5-tap-up - take over CP voice tap on call answer
+#
+# Called by chan_e5 (e5_route.c) via ast_safe_system. Env vars:
+#   E5_SIM_SLOT  1/2
+#   E5_RATE      8000/16000
+#   E5_INJECT    1 (inject mode: tap playback is the only uplink source)
+#
+# Control points (verified on device):
+#   uplink inject    S_VOICE_PCM_P SWITCH on  -> aplay  writes hw:0,18 (FE_ST_VOICE_PCM_P)
+#   downlink capture S_VOICE_CAP_C SWITCH on  -> arecord reads hw:0,9  (FE_ST_VOICE_C)
+set -e
+
+# IMPORTANT: e5-voice-audio must KEEP RUNNING. It holds FE_ST_VOICE and keeps the
+# DSP voice route alive; the tap endpoints hw:0,9/0,18 are only branch taps on that
+# route. Stopping it makes hw:0,9 fail with I/O error and breaks the screen phone.
+# Here we only toggle the tap switches; never touch e5-voice-audio.
+
+# ---- uplink inject ----
+amixer -q -c 0 sset 'S_VOICE_PCM_P SWITCH' on
+# uplink PCM play mode = uplink only: Asterisk audio is the sole uplink source
+amixer -q -c 0 sset 'VBC_DSP_VOICE_PCM_PLAY_MODE' 'VOICE_PCM_PLAY_UPLINK_ONLY' 2>/dev/null || true
+
+# ---- downlink capture ----
+amixer -q -c 0 sset 'S_VOICE_CAP_C SWITCH' on
+# downlink capture type = downlink: capture remote voice only, no local mix
+amixer -q -c 0 sset 'VBC_DSP_VOICE_CAPTURE_TYPE' 'VOICE_CAPTURE_DOWNLINK' 2>/dev/null || true
+
+exit 0

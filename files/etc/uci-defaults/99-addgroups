@@ -1,0 +1,13 @@
+#!/bin/sh
+
+# group 文件
+CONF="/etc/group"
+
+# 增加asterisk 
+sed -i -e 's/^dialout:x:20:$/dialout:x:20:asterisk/' -e 's/^audio:x:29:$/audio:x:29:asterisk/' -e 's/^pulse:x:51:pulse$/pulse:x:51:pulse,asterisk/' "$CONF"
+
+chmod 644 /etc/asterisk/e5.conf
+
+# 执行完后删除自身（避免重复执行）
+rm -f /etc/uci-defaults/99-addgroups
+exit 0

@@ -1,0 +1,9 @@
+#!/bin/sh
+# e5-tap-down - release CP voice tap on call end
+set -e
+
+amixer -q -c 0 sset 'S_VOICE_CAP_C SWITCH' off 2>/dev/null || true
+amixer -q -c 0 sset 'S_VOICE_PCM_P SWITCH' off 2>/dev/null || true
+
+# e5-voice-audio keeps running the whole time; here we only turn the tap switches off.
+exit 0

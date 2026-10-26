@@ -1,0 +1,11 @@
+{
+	/* Asterisk 23：模块经 AST_MODULE_INFO 生成的 constructor 在 dlopen 时
+	 * 自动 ast_module_register() 注册，loader 不再 dlsym 查 load_module。
+	 * load_module/unload_module/reload_module 是 static，不能也不需要在
+	 * version script 里导出。这里只导出 AST_MODULE_SELF_SYM 生成的 global
+	 * 函数 __chan_e5_module（供调试/兼容），其余全部隐藏。 */
+	global:
+		__chan_e5_module;
+	local:
+		*;
+};
